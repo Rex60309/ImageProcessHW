@@ -32,7 +32,7 @@ def dither_image_A(input_path):
     I2[img > D] = 255
 
     # Save the result
-    output_path = 'A_dithered_image.jpg'
+    output_path = 'A_dithered_image.png'
     cv2.imwrite(output_path, I2)
     print(f"Dithered image saved to {output_path}")
 
@@ -73,7 +73,7 @@ def dither_image_B(input_path):
     I_ext = (I_ext * 85).astype(np.uint8)
 
     # Save the result
-    output_path_extended = 'B_extended_dithered_image.jpg'
+    output_path_extended = 'B_extended_dithered_image.png'
     cv2.imwrite(output_path_extended, I_ext)
     print(f"Extended dithered image saved to {output_path_extended}")
 
