@@ -1,158 +1,248 @@
 import numpy as np
-import cv2
+import pandas as pd
 import matplotlib.pyplot as plt
+import cv2
+from matplotlib.ticker import FuncFormatter
+import os
 
+# Apply histogram equalization to grayscale image
 def histogram_equalization_grayscale(img):
-    """
-    Apply histogram equalization to a grayscale image
-    """
+    # Get image dimensions
+    height, width = img.shape
+    N = height * width
+    L = 256  # (0-255)
+
     # Calculate histogram
-    hist, bins = np.histogram(img.flatten(), 256, [0, 256])
+    hist = np.zeros(L, dtype=int)
+    for i in range(height):
+        for j in range(width):
+            hist[img[i, j]] += 1
 
-    # Calculate cumulative distribution function (CDF)
-    cdf = hist.cumsum()
+    # Create dataframe for the table
+    df = pd.DataFrame({
+        'Gray level i': list(range(L)),
+        'n_i': hist
+    })
+    df['∑n_i'] = df['n_i'].cumsum()
+    df['∑(n_i/N)'] = df['∑n_i'] / N
+    df['(L-1)∑(n_i/N)'] = df['∑(n_i/N)'] * (L-1)
+    df['Rounded value'] = np.round(df['(L-1)∑(n_i/N)']).astype(int)
 
-    # Normalize CDF to range [0, 255]
-    cdf_normalized = (cdf * 255 / cdf[-1]).astype('uint8')
+    # Apply mapping to the image
+    img_equalized = np.zeros_like(img)
+    for i in range(height):
+        for j in range(width):
+            img_equalized[i, j] = df['Rounded value'][img[i, j]]
 
-    # Apply histogram equalization using the mapping
-    img_equalized = cdf_normalized[img]
+    return img_equalized, df
 
-    return img_equalized
-
+# Apply histogram equalization to color image
 def histogram_equalization_color(img):
-    """
-    Apply histogram equalization to a color image using the method specified in the assignment
-    """
     # Convert color image to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray_equalized, df = histogram_equalization_grayscale(gray)
 
-    # Apply histogram equalization to grayscale image
-    gray_equalized = histogram_equalization_grayscale(gray)
+    img_equalized = np.zeros_like(img, dtype=np.float32)
 
-    # Create output color image
-    img_equalized = np.zeros_like(img)
+    # For each pixel, modify the color by (r,g,b) × G' / G
+    for i in range(img.shape[0]):
+        for j in range(img.shape[1]):
+            g_value = gray[i, j]
+            g_prime = gray_equalized[i, j]
 
-    # For each pixel, modify the color by (r,g,b) × G'/G
-    # Handle division by zero
-    ratio = np.zeros_like(gray, dtype=np.float32)
-    mask = gray > 0
-    ratio[mask] = gray_equalized[mask] / gray[mask]
-    ratio[~mask] = 0
+            # Avoid division by zero
+            if g_value > 0:
+                ratio = g_prime / g_value
+            else:
+                ratio = 0
 
-    # Apply the ratio to each color channel
-    for i in range(3):
-        img_equalized[:,:,i] = np.clip(img[:,:,i] * ratio, 0, 255).astype('uint8')
+            for c in range(3):
+                img_equalized[i, j, c] = min(255, img[i, j, c] * ratio)
 
-    return img_equalized, gray, gray_equalized
+    return img_equalized.astype(np.uint8), gray, gray_equalized, df
 
-def plot_results(original, equalized, title_prefix):
-    """
-    Plot original and equalized images along with their histograms
-    """
-    plt.figure(figsize=(12, 8))
+# Plot original and equalized grayscale images with histograms and calculation table
+def plot_grayscale_results(original, equalized, df, filename_prefix):
+    L = 256  # (0-255)
+
+    hist_original = cv2.calcHist([original], [0], None, [L], [0, L])
+    hist_equalized = cv2.calcHist([equalized], [0], None, [L], [0, L])
+
+    plt.figure(figsize=(20, 12))
 
     # Original image
-    plt.subplot(2, 2, 1)
+    plt.subplot(2, 3, 1)
     plt.imshow(original, cmap='gray')
-    plt.title(f'{title_prefix} Original Image')
+    plt.title(f'Original {filename_prefix}')
     plt.axis('off')
 
     # Original histogram
-    plt.subplot(2, 2, 2)
-    plt.hist(original.flatten(), 256, [0, 256], color='r')
-    plt.title(f'{title_prefix} Original Histogram')
-    plt.xlim([0, 256])
+    plt.subplot(2, 3, 2)
+    plt.bar(range(L), hist_original.flatten(), color='black')
+    plt.title(f'Original {filename_prefix} Histogram')
+    plt.xlim([0, L-1])
+
+    # Original cumulative histogram
+    cum_hist_original = np.cumsum(hist_original) / 1000
+    plt.subplot(2, 3, 3)
+    plt.plot(range(L), cum_hist_original, color='black')
+    plt.title(f'Original {filename_prefix} Cumulative Histogram')
+    plt.xlim([0, L-1])
+    plt.ylim([0, np.max(cum_hist_original)])
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
 
     # Equalized image
-    plt.subplot(2, 2, 3)
+    plt.subplot(2, 3, 4)
     plt.imshow(equalized, cmap='gray')
-    plt.title(f'{title_prefix} Equalized Image')
+    plt.title(f'Equalized {filename_prefix}')
     plt.axis('off')
 
     # Equalized histogram
-    plt.subplot(2, 2, 4)
-    plt.hist(equalized.flatten(), 256, [0, 256], color='r')
-    plt.title(f'{title_prefix} Equalized Histogram')
-    plt.xlim([0, 256])
+    plt.subplot(2, 3, 5)
+    plt.bar(range(L), hist_equalized.flatten(), color='black')
+    plt.title(f'Equalized {filename_prefix} Histogram')
+    plt.xlim([0, L-1])
+
+    # Equalized cumulative histogram
+    cum_hist_equalized = np.cumsum(hist_equalized) / 1000
+    plt.subplot(2, 3, 6)
+    plt.plot(range(L), cum_hist_equalized, color='black')
+    plt.title(f'Equalized {filename_prefix} Cumulative Histogram')
+    plt.xlim([0, L-1])
+    plt.ylim([0, np.max(cum_hist_equalized)])
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
 
     plt.tight_layout()
-    plt.savefig(f'{title_prefix}_results.png')
+    plt.savefig(f'{filename_prefix}_grayscale_results.png')
     plt.show()
 
-def color_results(original, equalized, gray, gray_equalized):
-    """
-    Plot results for color image processing
-    """
-    # Plot grayscale conversion results
-    plot_results(gray, gray_equalized, "Grayscale")
+    # Save full table to CSV
+    df.to_csv(f'{filename_prefix}_equalization_table.csv', index=False)
 
-    # Plot color images
-    plt.figure(figsize=(12, 6))
+# Plot original and equalized color images with histograms and calculation table
+def plot_color_results(original, equalized, gray, gray_equalized, filename_prefix):
+    plt.figure(figsize=(15, 10))
 
-    plt.subplot(1, 2, 1)
+    # Original color image
+    plt.subplot(2, 2, 1)
     plt.imshow(cv2.cvtColor(original, cv2.COLOR_BGR2RGB))
     plt.title('Original Color Image')
     plt.axis('off')
 
-    plt.subplot(1, 2, 2)
+    # Original color to grayscale image
+    plt.subplot(2, 2, 2)
+    plt.imshow(gray, cmap='gray')
+    plt.title('Original Color To Grayscale Image')
+    plt.axis('off')
+
+    # Equalized color image
+    plt.subplot(2, 2, 3)
     plt.imshow(cv2.cvtColor(equalized, cv2.COLOR_BGR2RGB))
     plt.title('Equalized Color Image')
     plt.axis('off')
 
+    # Equalized color to grayscale image
+    plt.subplot(2, 2, 4)
+    plt.imshow(gray_equalized, cmap='gray')
+    plt.title('Equalized Color To Grayscale Image')
+    plt.axis('off')
+
     plt.tight_layout()
-    plt.savefig('color_results.png')
+    plt.savefig(f'{filename_prefix}_color_results.png')
     plt.show()
 
-    # Plot histograms for each channel of color images
-    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+    # Plot color channel histograms
+    plt.figure(figsize=(20, 12))
+    colors = ['b', 'g', 'r']
     titles = ['Blue', 'Green', 'Red']
 
     for i in range(3):
-        # Original image channel histogram
-        axs[0, i].hist(original[:,:,i].flatten(), 256, [0, 256], color=('b', 'g', 'r')[i])
-        axs[0, i].set_title(f'Original {titles[i]} Channel Histogram')
-        axs[0, i].set_xlim([0, 256])
+        hist = cv2.calcHist([original], [i], None, [256], [0, 256]).flatten() / 1000
+        hist_eq = cv2.calcHist([equalized], [i], None, [256], [0, 256]).flatten() / 1000
 
-        # Equalized image channel histogram
-        axs[1, i].hist(equalized[:,:,i].flatten(), 256, [0, 256], color=('b', 'g', 'r')[i])
-        axs[1, i].set_title(f'Equalized {titles[i]} Channel Histogram')
-        axs[1, i].set_xlim([0, 256])
+        # Original histogram
+        plt.subplot(4, 3, i + 1)
+        plt.bar(range(256), hist, color=colors[i], alpha=0.6)
+        plt.title(f'Original {titles[i]} Channel Histogram')
+        plt.xlim([0, 255])
+        plt.ylim([0, np.max(hist)])
+        plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
+
+        # Original wave chart
+        plt.subplot(4, 3, i + 4)
+        plt.plot(range(256), hist, color=colors[i], linewidth=1.5)
+        plt.fill_between(range(256), hist, color=colors[i], alpha=0.4)
+        plt.title(f'Original {titles[i]} Channel Wave Chart')
+        plt.xlim([0, 255])
+        plt.ylim([0, np.max(hist)])
+        plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
+
+        # Equalized histogram
+        plt.subplot(4, 3, i + 7)
+        plt.bar(range(256), hist_eq, color=colors[i], alpha=0.6)
+        plt.title(f'Equalized {titles[i]} Channel Histogram')
+        plt.xlim([0, 255])
+        plt.ylim([0, np.max(hist_eq)])
+        plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
+
+        # Equalized wave chart
+        plt.subplot(4, 3, i + 10)
+        plt.plot(range(256), hist_eq, color=colors[i], linewidth=1.5)
+        plt.fill_between(range(256), hist_eq, color=colors[i], alpha=0.4)
+        plt.title(f'Equalized {titles[i]} Channel Wave Chart')
+        plt.xlim([0, 255])
+        plt.ylim([0, np.max(hist_eq)])
+        plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
 
     plt.tight_layout()
-    plt.savefig('color_histograms.png')
+    plt.savefig(f'{filename_prefix}_color_histograms.png')
     plt.show()
 
+# Process image
+def process_image(image_path_gray, image_path_color):
+    img_gray = cv2.imread(image_path_gray, cv2.IMREAD_GRAYSCALE)
+    if img_gray is None:
+        print(f"Error: Could not read grayscale image {image_path_gray}")
+        return
+
+    img_color = cv2.imread(image_path_color)
+    if img_color is None:
+        print(f"Error: Could not read color image {image_path_color}")
+        return
+
+    # Grayscale image
+    filename_prefix = 'Grayscale Image'
+    img_gray = cv2.imread(image_path_gray, cv2.IMREAD_GRAYSCALE)
+    equalized_gray, df = histogram_equalization_grayscale(img_gray)
+    plot_grayscale_results(img_gray, equalized_gray, df, filename_prefix)
+
+    # Color image
+    img = cv2.imread(image_path_color)
+    equalized_color, gray, gray_equalized, df = histogram_equalization_color(img)
+    filename_prefix = 'Color To Grayscale Image'
+    plot_grayscale_results(gray, gray_equalized, df, filename_prefix)
+    filename_prefix = 'Color Image'
+    plot_color_results(img, equalized_color, gray, gray_equalized, filename_prefix)
+
+# Unit display
+def k_formatter(x, pos):
+    return f'{int(x)}K'
+
+# Input images
 def main():
-    # Process grayscale image
-    gray_image = cv2.imread('gray_image.png', cv2.IMREAD_GRAYSCALE)
-    if gray_image is not None:
-        equalized_gray = histogram_equalization_grayscale(gray_image)
-        plot_results(gray_image, equalized_gray, "Grayscale")
-        print("Grayscale image processing complete.")
+    image_path_gray = input("Enter grayscale image path: ").strip()
+    image_path_color = input("Enter color image path: ").strip()
+
+    missing_images = []
+    if not os.path.exists(image_path_gray):
+        missing_images.append("grayscale image")
+    if not os.path.exists(image_path_color):
+        missing_images.append("color image")
+
+    if missing_images:
+        print(f"Missing image: {', '.join(missing_images)}")
     else:
-        print("Failed to load grayscale image.")
-
-    # Process color image
-    color_image = cv2.imread('color_image.jpg')
-    if color_image is not None:
-        equalized_color, gray, gray_equalized = histogram_equalization_color(color_image)
-        color_results(color_image, equalized_color, gray, gray_equalized)
-        print("Color image processing complete.")
-    else:
-        print("Failed to load color image.")
-
-    print("\nExperiment Discussion:")
-    print("1. Grayscale Histogram Equalization:")
-    print("   - The histogram equalization process redistributes pixel intensities to enhance contrast.")
-    print("   - This is particularly effective for images with poor contrast or limited dynamic range.")
-    print("   - The equalized histogram shows a more uniform distribution across all intensity levels.")
-
-    print("\n2. Color Histogram Equalization:")
-    print("   - The method preserves the color relationships while enhancing contrast.")
-    print("   - By using the ratio of equalized grayscale to original grayscale, color balance is maintained.")
-    print("   - Each color channel is modified proportionally based on the grayscale enhancement.")
-    print("   - This approach prevents color distortion that might occur if equalizing each channel independently.")
+        process_image(image_path_gray, image_path_color)
 
 if __name__ == "__main__":
     main()
