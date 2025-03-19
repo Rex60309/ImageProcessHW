@@ -199,7 +199,7 @@ def plot_color_results(original, equalized, gray, gray_equalized, filename_prefi
         plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
 
     plt.tight_layout()
-    plt.savefig(f'{filename_prefix}_color_histograms.png')
+    plt.savefig(f'{filename_prefix}_color_channel_histograms.png')
     plt.show()
 
 # Process image
