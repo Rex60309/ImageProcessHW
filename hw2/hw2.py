@@ -202,7 +202,7 @@ def plot_color_results(original, equalized, gray, gray_equalized, filename_prefi
     plt.savefig(f'{filename_prefix}_color_channel_histograms.png')
     plt.show()
 
-# Process image
+# Process images
 def process_image(image_path_gray, image_path_color):
     img_gray = cv2.imread(image_path_gray, cv2.IMREAD_GRAYSCALE)
     if img_gray is None:
