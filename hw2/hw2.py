@@ -61,7 +61,7 @@ def histogram_equalization_color(img):
 
     return img_equalized.astype(np.uint8), gray, gray_equalized, df
 
-# Plot original and equalized grayscale images with histograms and calculation table
+# Plot original and equalized grayscale images with histograms
 def plot_grayscale_results(original, equalized, df, filename_prefix):
     L = 256  # (0-255)
 
@@ -78,14 +78,16 @@ def plot_grayscale_results(original, equalized, df, filename_prefix):
 
     # Original histogram
     plt.subplot(2, 3, 2)
-    plt.bar(range(L), hist_original.flatten(), color='black')
+    plt.bar(range(L), hist_original.flatten() / 1000, color='black', linewidth=1.25)
     plt.title(f'Original {filename_prefix} Histogram')
     plt.xlim([0, L-1])
+    plt.ylim([0, np.max(hist_original.flatten() / 1000)])
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
 
     # Original cumulative histogram
     cum_hist_original = np.cumsum(hist_original) / 1000
     plt.subplot(2, 3, 3)
-    plt.plot(range(L), cum_hist_original, color='black')
+    plt.plot(range(L), cum_hist_original, color='black', linewidth=1.25)
     plt.title(f'Original {filename_prefix} Cumulative Histogram')
     plt.xlim([0, L-1])
     plt.ylim([0, np.max(cum_hist_original)])
@@ -99,27 +101,29 @@ def plot_grayscale_results(original, equalized, df, filename_prefix):
 
     # Equalized histogram
     plt.subplot(2, 3, 5)
-    plt.bar(range(L), hist_equalized.flatten(), color='black')
+    plt.bar(range(L), hist_equalized.flatten() / 1000, color='black', linewidth=1.25)
     plt.title(f'Equalized {filename_prefix} Histogram')
     plt.xlim([0, L-1])
+    plt.ylim([0, np.max(hist_equalized.flatten() / 1000)])
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
 
     # Equalized cumulative histogram
     cum_hist_equalized = np.cumsum(hist_equalized) / 1000
     plt.subplot(2, 3, 6)
-    plt.plot(range(L), cum_hist_equalized, color='black')
+    plt.plot(range(L), cum_hist_equalized, color='black', linewidth=1.25)
     plt.title(f'Equalized {filename_prefix} Cumulative Histogram')
     plt.xlim([0, L-1])
     plt.ylim([0, np.max(cum_hist_equalized)])
     plt.gca().yaxis.set_major_formatter(FuncFormatter(k_formatter))
 
     plt.tight_layout()
-    plt.savefig(f'{filename_prefix}_grayscale_results.png')
+    plt.savefig(f'{filename_prefix}_results.png')
     plt.show()
 
     # Save full table to CSV
     df.to_csv(f'{filename_prefix}_equalization_table.csv', index=False)
 
-# Plot original and equalized color images with histograms and calculation table
+# Plot original and equalized color images with histograms
 def plot_color_results(original, equalized, gray, gray_equalized, filename_prefix):
     plt.figure(figsize=(15, 10))
 
@@ -148,7 +152,7 @@ def plot_color_results(original, equalized, gray, gray_equalized, filename_prefi
     plt.axis('off')
 
     plt.tight_layout()
-    plt.savefig(f'{filename_prefix}_color_results.png')
+    plt.savefig(f'{filename_prefix}_results.png')
     plt.show()
 
     # Plot color channel histograms
@@ -162,7 +166,7 @@ def plot_color_results(original, equalized, gray, gray_equalized, filename_prefi
 
         # Original histogram
         plt.subplot(4, 3, i + 1)
-        plt.bar(range(256), hist, color=colors[i], alpha=0.6)
+        plt.bar(range(256), hist, color=colors[i], linewidth=1.25, alpha=0.6)
         plt.title(f'Original {titles[i]} Channel Histogram')
         plt.xlim([0, 255])
         plt.ylim([0, np.max(hist)])
@@ -179,7 +183,7 @@ def plot_color_results(original, equalized, gray, gray_equalized, filename_prefi
 
         # Equalized histogram
         plt.subplot(4, 3, i + 7)
-        plt.bar(range(256), hist_eq, color=colors[i], alpha=0.6)
+        plt.bar(range(256), hist_eq, color=colors[i], linewidth=1.25, alpha=0.6)
         plt.title(f'Equalized {titles[i]} Channel Histogram')
         plt.xlim([0, 255])
         plt.ylim([0, np.max(hist_eq)])
@@ -212,17 +216,15 @@ def process_image(image_path_gray, image_path_color):
 
     # Grayscale image
     filename_prefix = 'Grayscale Image'
-    img_gray = cv2.imread(image_path_gray, cv2.IMREAD_GRAYSCALE)
     equalized_gray, df = histogram_equalization_grayscale(img_gray)
     plot_grayscale_results(img_gray, equalized_gray, df, filename_prefix)
 
     # Color image
-    img = cv2.imread(image_path_color)
-    equalized_color, gray, gray_equalized, df = histogram_equalization_color(img)
+    equalized_color, gray, gray_equalized, df = histogram_equalization_color(img_color)
     filename_prefix = 'Color To Grayscale Image'
     plot_grayscale_results(gray, gray_equalized, df, filename_prefix)
     filename_prefix = 'Color Image'
-    plot_color_results(img, equalized_color, gray, gray_equalized, filename_prefix)
+    plot_color_results(img_color, equalized_color, gray, gray_equalized, filename_prefix)
 
 # Unit display
 def k_formatter(x, pos):
