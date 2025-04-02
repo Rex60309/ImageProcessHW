@@ -20,7 +20,7 @@ plt.subplot(131)
 plt.imshow(original_img, cmap='gray')
 plt.title('Original Image')
 
-angle = 30
+angle = -30
 
 # Nearest Neighbor Interpolation
 rotated_nearest = ndimage.rotate(original_img, angle, order=0, reshape=False)
