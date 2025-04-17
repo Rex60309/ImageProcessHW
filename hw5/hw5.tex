@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\begin{document}
+
+\section{$f(ax) \Leftrightarrow \frac{1}{a}F(\frac{u}{a})$, where $a \in R$ and $a \neq 0$}
+
+\subsection{Forward Direction: $f(ax) \Rightarrow \frac{1}{a}F(\frac{u}{a})$}
+
+\begin{subequations}
+\begin{align}
+\mathcal{F}\{f(ax)\} &= \int_{-\infty}^{\infty} f(ax)e^{-j2\pi ux}dx
+\end{align}
+
+Let $v = ax$, then $x = \frac{v}{a}$, which gives ${dx} = \frac{dv}{a}$:
+\begin{align}
+\mathcal{F}\{f(ax)\} &= \int_{-\infty}^{\infty} f(v)e^{-j2\pi u\frac{v}{a}}\frac{dv}{a}\\
+&= \frac{1}{a}\int_{-\infty}^{\infty} f(v)e^{-j2\pi \frac{u}{a}v}dv\\
+&= \frac{1}{a}F\left(\frac{u}{a}\right)
+\end{align}
+\end{subequations}
+
+\subsection{Inverse Direction: $f(ax) \Leftarrow \frac{1}{a}F(\frac{u}{a})$}
+
+\begin{subequations}
+\begin{align}
+\mathcal{F}^{-1}\left\{\frac{1}{a}F\left(\frac{u}{a}\right)\right\} &= \int_{-\infty}^{\infty} \frac{1}{a}F\left(\frac{u}{a}\right)e^{j2\pi ux}du
+\end{align}
+
+Let $v = \frac{u}{a}$, then $u = {a}{v}$, which gives $du = a\,dv$:
+\begin{align}
+\mathcal{F}^{-1}\left\{\frac{1}{a}F\left(\frac{u}{a}\right)\right\} &= \int_{-\infty}^{\infty} \frac{1}{a}F(v)e^{j2\pi avx}(a\,dv)\\
+&= \int_{-\infty}^{\infty} F(v)e^{j2\pi avx}dv\\
+&= f(ax)
+\end{align}
+\end{subequations}
+
+Thus, we have proven $f(ax) \Leftrightarrow \frac{1}{a}F(\frac{u}{a})$.
+
+\newpage
+
+\section{$f(x-x_0) \Leftrightarrow F(u)e^{-j2\pi ux_0}$}
+
+\subsection{Forward Direction: $f(x-x_0) \Rightarrow F(u)e^{-j2\pi ux_0}$}
+
+\begin{subequations}
+\begin{align}
+\mathcal{F}\{f(x-x_0)\} &= \int_{-\infty}^{\infty} f(x-x_0)e^{-j2\pi ux}dx
+\end{align}
+
+Let $v = x-x_0$, then $x = v+x_0$, which gives $dx = dv$:
+\begin{align}
+\mathcal{F}\{f(x-x_0)\} &= \int_{-\infty}^{\infty} f(v)e^{-j2\pi u(v+x_0)}dv\\
+&= \int_{-\infty}^{\infty} f(v)e^{-j2\pi uv}e^{-j2\pi ux_0}dv
+\end{align}
+Since $e^{-j2\pi ux_0}$ is independent of the integration variable v, we can factor it out:
+\begin{align}
+\mathcal{F}\{f(x-x_0)\} &= e^{-j2\pi ux_0}\int_{-\infty}^{\infty} f(v)e^{-j2\pi uv}dv\\
+&= F(u)e^{-j2\pi ux_0}
+\end{align}
+\end{subequations}
+
+\subsection{Inverse Direction: $f(x-x_0) \Leftarrow F(u)e^{-j2\pi ux_0}$}
+
+\begin{subequations}
+\begin{align}
+\mathcal{F}^{-1}\{F(u)e^{-j2\pi ux_0}\} &= \int_{-\infty}^{\infty} F(u)e^{-j2\pi ux_0}e^{j2\pi ux}du\\
+&= \int_{-\infty}^{\infty} F(u)e^{j2\pi u(x-x_0)}du
+\end{align}
+
+Let $v = x-x_0$, then $x = v+x_0$:
+\begin{align}
+\mathcal{F}^{-1}\{F(u)e^{-j2\pi ux_0}\} &= \int_{-\infty}^{\infty} F(u)e^{j2\pi uv}du\\
+&= f(v)\\
+&= f(x-x_0)
+\end{align}
+\end{subequations}
+
+Thus, we have proven $f(x-x_0) \Leftrightarrow F(u)e^{-j2\pi ux_0}$.
+
+\end{document}
