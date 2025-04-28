@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 def create_image(size=(256, 256), gray_value = 100):
     return np.ones(size, dtype=np.uint8) * gray_value
 
-# Gaussian noise with mean = 0, var = 25
+# Gaussian noise n(x,y) with mean = 0, var = 25
 def generate_gaussian_noise(size=(256, 256), mean=0, var=25):
-    sigma = np.sqrt(var)  
+    sigma = np.sqrt(var)
     noise = np.zeros(size, dtype=np.float32)
- 
+
     rows, cols = size
     for i in range(rows):
         j = 0
@@ -25,7 +25,7 @@ def generate_gaussian_noise(size=(256, 256), mean=0, var=25):
 
             j += 2
 
-        # if odd cols
+        # if odd column
         if j == cols - 1:
             r = np.random.rand()
             phi = np.random.rand()
@@ -62,9 +62,11 @@ def plot_histogram(image, title='Histogram'):
 
 def main():
     image_size = (256, 256)
+
+    # original g(x,y)
     g_xy = create_image(image_size)
 
-    # Part 2: Generate Gaussian noise and add to image
+    # noisy f(x,y)
     noise = generate_gaussian_noise(image_size)
     f_xy = add_noise_to_image(g_xy, noise)
 
