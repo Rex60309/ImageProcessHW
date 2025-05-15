@@ -1,0 +1,47 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\usepackage[a4paper,margin=1in]{geometry}
+
+\begin{document}
+
+\section{$\overline{A \circ B} = \bar{A} \bullet \hat{B}$}
+
+\begin{subequations}
+
+\begin{align}
+\overline{A \circ B} &= \overline{(A \ominus B) \oplus B} \\
+&= \overline{A \ominus B} \ominus \hat{B} \\
+&= (\bar{A} \oplus \hat{B}) \ominus \hat{B} \\
+&= \bar{A} \bullet \hat{B}
+\end{align}
+
+\end{subequations}
+
+\section{$\overline{A \oplus B} = \bar{A} \ominus \hat{B}$} 
+
+By definition:
+\begin{align}
+A \oplus B &= \{\mathbf{x} | (\hat{B})_{\mathbf{x}} \cap A \neq \phi\} \\
+A \ominus B &= \{\mathbf{w} | B_{\mathbf{w}} \subseteq A\}
+\end{align}
+
+\begin{subequations}
+
+Taking the complement of the dilation:
+\begin{align}
+\overline{A \oplus B} &= \overline{\{\mathbf{x} | (\hat{B})_{\mathbf{x}} \cap A \neq \phi\}} \\
+&= \{\mathbf{x} | (\hat{B})_{\mathbf{x}} \cap A = \phi\}
+\end{align}
+
+If $(\hat{B})_{\mathbf{x}} \cap A = \phi$, then $(\hat{B})_{\mathbf{x}} \subseteq \bar{A}$
+
+Therefore:
+\begin{align}
+\overline{A \oplus B} &= \{\mathbf{x} | (\hat{B})_{\mathbf{x}} \cap A = \phi\} \\
+&= \{\mathbf{x} | (\hat{B})_{\mathbf{x}} \subseteq \bar{A}\} \\
+&= \bar{A} \ominus \hat{B}
+\end{align}
+
+\end{subequations}
+
+\end{document}
