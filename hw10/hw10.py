@@ -1,13 +1,4 @@
 def wavelet_transform_step(data):
-    """
-    Apply one step of wavelet transform
-
-    Args:
-        data: List of numbers to transform
-
-    Returns:
-        tuple: (low_pass_coefficients, high_pass_coefficients)
-    """
     if len(data) % 2 != 0:
         raise ValueError("Data length must be even")
 
@@ -30,15 +21,6 @@ def wavelet_transform_step(data):
     return low_pass, high_pass
 
 def full_wavelet_transform(data):
-    """
-    Apply complete wavelet transform until we get single coefficient
-
-    Args:
-        data: List of numbers to transform
-
-    Returns:
-        dict: Contains all levels of transformation
-    """
     result = {'original': data}
     current_data = data[:]
     level = 1
@@ -64,16 +46,6 @@ def full_wavelet_transform(data):
     return result
 
 def inverse_wavelet_step(low_pass, high_pass):
-    """
-    Reconstruct data from one level of wavelet coefficients
-
-    Args:
-        low_pass: List of s coefficients
-        high_pass: List of d coefficients
-
-    Returns:
-        list: Reconstructed data
-    """
     if len(low_pass) != len(high_pass):
         raise ValueError("Low pass and high pass must have same length")
 
@@ -94,15 +66,6 @@ def inverse_wavelet_step(low_pass, high_pass):
     return reconstructed
 
 def full_inverse_wavelet(transform_result):
-    """
-    Reconstruct original data from complete wavelet transform
-
-    Args:
-        transform_result: Dictionary containing wavelet transform levels
-
-    Returns:
-        list: Reconstructed original data
-    """
     print("\nReconstructing original sequence:")
     print("-" * 50)
 
@@ -128,13 +91,6 @@ def full_inverse_wavelet(transform_result):
     return current_low
 
 def solve_problem(data, problem_label):
-    """
-    Solve one complete problem (forward and inverse transform)
-
-    Args:
-        data: Input data sequence
-        problem_label: Label for the problem (e.g., "Problem A", "Problem B")
-    """
     print(f"\n{'='*60}")
     print(f"{problem_label}")
     print(f"{'='*60}")
@@ -159,8 +115,6 @@ def solve_problem(data, problem_label):
     return transform_result, recovered
 
 def main():
-    """Main function to solve both problems"""
-
     # Problem A
     data_a = [71, 67, 24, 26, 36, 32, 14, 18]
     solve_problem(data_a, "Problem A")
