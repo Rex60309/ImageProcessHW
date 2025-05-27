@@ -1,0 +1,162 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+
+\begin{document}
+
+\section{Filter}
+
+\begin{itemize}
+    \item Low pass filtering: $s = \frac{a + b}{2}$ (average)
+    \item High pass filtering: $d = a - s$ (difference)
+\end{itemize}
+
+\section{Problem A}
+
+\subsection{Part (i)}
+
+\textbf{Original data sequence:} $[71, 67, 24, 26, 36, 32, 14, 18]$
+
+\subsubsection{Level 1 Transformation}
+
+\begin{itemize}
+    \item $s_1 = [(\frac{71 + 67}{2}), (\frac{24 + 26}{2}), (\frac{36 + 32}{2}), (\frac{14 + 18}{2}]) = [69, 25, 34, 16]$ $(cA)$
+    \item $d_1 = [(71-69), (24-25), (36-34), (14-16)]  = [2, -1, 2, -2]$ $(cD)$
+\end{itemize}
+
+$\Rightarrow v_1 = [s_1, d_1] = [69, 25, 34, 16, 2, -1, 2, -2]$
+
+\subsubsection{Level 2 Transformation}
+
+\begin{itemize}
+    \item $s_2 = [(\frac{69 + 25}{2}), (\frac{34 + 16}{2})] = [47, 25]$
+    \item $d_2 = [(69-47), (34-25)]  = [22, 9]$
+\end{itemize}
+
+$\Rightarrow v_2 = [s_2, d_2] = [47, 25, 22, 9]$
+
+\subsubsection{Level 3 Transformation}
+
+\begin{itemize}
+    \item $s_3 = [(\frac{47 + 25}{2})] = [36]$
+    \item $d_3 = [(47-36)]  = [11]$
+\end{itemize}
+
+$\Rightarrow v_3 = [s_3, d_3] = [36, 11]$
+
+\subsubsection{Wavelet Transform Result}
+\textbf{}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Level} & \textbf{Low Pass Filtering (s)} & \textbf{High Pass Filtering (d)} \\
+\hline
+1 & $[69, 25, 34, 16]$ & $[2, -1, 2, -2]$ \\
+2 & $[47, 25]$ & $[22, 9]$ \\
+3 & $[36]$ & $[11]$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Part (ii)}
+
+\subsubsection{Inverse Coefficients Formula}
+
+From $s = \frac{a + b}{2}$ and $d = a - s$:
+\begin{itemize}
+    \item $a = s + d$
+    \item $b = s - d$
+\end{itemize}
+
+\subsubsection{Inverse Wavelet Transform}
+
+Input data: $[s_3, d_3, d_2, d_1] = [36, 11, 22, 9, 2, -1, 2, -2]$ 
+
+\begin{align*}
+[[36+11], [36-11], 22, 9, 2, -1, 2, -2] &= [47, 25, 22, 9, 2, -1, 2, -2] \\
+[[47, 25]+[22, 9], [47, 25]-[22, 9], 2, -1, 2, -2]
+&= [[69, 34], [25, 16], 2, -1, 2, -2] \\
+&= [69, 25, 34, 16, 2, -1, 2, -2] \\
+[[69, 25, 34, 16]+[2, -1, 2, -2], [69, 25, 34, 16]-[2, -1, 2, -2]] 
+&= [[71, 24, 36, 14], [67, 26, 32, 18]] \\
+&= [71, 67, 24, 26, 36, 32, 14, 18]
+\end{align*}
+\section{Problem B}
+
+\subsection{Part (i)}
+
+\textbf{Original data sequence:} $[18, 14, 32, 36, 26, 24, 67, 71]$
+
+\subsubsection{Level 1 Transformation}
+
+\begin{itemize}
+    \item $s_1 = [(\frac{18 + 14}{2}), (\frac{32 + 36}{2}), (\frac{26 + 24}{2}), (\frac{67 + 71}{2}]) = [16, 34, 25, 69]$ $(cA)$
+    \item $d_1 = [(18-16), (32-34), (26-25), (67-69)]  = [2, -2, 1, -2]$ $(cD)$
+\end{itemize}
+
+$\Rightarrow v_1 = [s_1, d_1] = [16, 34, 25, 69, 2, -2, 1, -2]$
+
+\subsubsection{Level 2 Transformation}
+
+\begin{itemize}
+    \item $s_2 = [(\frac{16+34}{2}), (\frac{25+69}{2})] = [25, 47]$
+    \item $d_2 = [(16-25), (25-47)]  = [-9, -22]$
+\end{itemize}
+
+$\Rightarrow v_2 = [s_2, d_2] = [25, 47, -9, -22]$
+
+\subsubsection{Level 3 Transformation}
+
+\begin{itemize}
+    \item $s_3 = [(\frac{25+47}{2})] = [36]$
+    \item $d_3 = [(25-36)]  = [-11]$
+\end{itemize}
+
+$\Rightarrow v_3 = [s_3, d_3] = [36, -11]$
+
+\subsubsection{Wavelet Transform Result}
+\textbf{}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Level} & \textbf{Low Pass Filtering (s)} & \textbf{High Pass Filtering (d)} \\
+\hline
+1 & $[16, 34, 25, 69]$ & $[2, -2, 1, -2]$ \\
+2 & $[25, 47]$ & $[-9, -22]$ \\
+3 & $[36]$ & $[-11]$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Part (ii)}
+
+\subsubsection{Inverse Coefficients Formula}
+
+From $s = \frac{a + b}{2}$ and $d = a - s$:
+\begin{itemize}
+    \item $a = s + d$
+    \item $b = s - d$
+\end{itemize}
+
+\subsubsection{Inverse Wavelet Transform}
+
+Input data: $[s_3, d_3, d_2, d_1] = [36, -11, -9, -22, 2, -2, 1, -2]$ 
+
+\begin{align*}
+[[36+(-11)], [36-(-11)], -9, -22, 2, -2, 1, -2] &= [25, 47, -9, -22, 2, -2, 1, -2] \\
+[[25, 47]+[-9, -22], [25, 47]-[-9, -22], 2, -2, 1, -2]
+&= [[16, 25], [34, 69], 2, -2, 1, -2] \\
+&= [16, 34, 25, 69, 2, -2, 1, -2] \\
+[[16, 34, 25, 69]+[2, -2, 1, -2], [16, 34, 25, 69]-[2, -2, 1, -2]] 
+&= [[18, 32, 26, 67], [14, 36, 24, 71]] \\
+&= [18, 14, 32, 36, 26, 24, 67, 71]
+\end{align*}
+
+\end{document}
